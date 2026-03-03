@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-sans);
+  --color-background: #000000;
+  --color-foreground: #ededed;
+  
+  /* Admanics Brand Colors */
+  --color-obsidian: #050505;
+  --color-obsidian-light: #111827; /* Charcoal */
+  --color-accent-purple: #6366f1;
+  --color-accent-blue: #a855f7;
+  
+  /* Gradients */
+  --background-gradient: linear-gradient(to bottom right, var(--color-background), var(--color-obsidian-light));
+  --brand-gradient: linear-gradient(to right, var(--color-accent-purple), var(--color-accent-blue));
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    background-image: var(--background-gradient);
+    color: var(--color-foreground);
+    min-height: 100vh;
+  }
+}
+
+@utility glass-panel {
+  background: rgba(17, 24, 39, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@utility text-gradient {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.6);
+  }
+}
