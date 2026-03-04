@@ -1,181 +1,182 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, CheckCircle2, TrendingUp, Shield, Camera } from "lucide-react";
+import { ArrowRight, CheckCircle2, TrendingUp, Shield, Camera, Globe, Loader2 } from "lucide-react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { cn } from "@/components/ui/glass-card";
+import { client } from "@/sanity/lib/client";
 
 // Data Structure for Pricing
-const pricingTiers = {
-  marketing: [
-    {
-      name: "Starter",
-      description: "Essential growth tools to establish your brand presence.",
-      price: "$2,500",
-      period: "/ mo",
-      features: [
-        "Basic Performance Marketing",
-        "Standard Analytics & Reporting",
-        "SEO foundations",
-        "Social Media Management (1 platform)",
-      ],
-      popular: false,
-    },
-    {
-      name: "Growth",
-      description: "Comprehensive multi-channel strategy for scaling businesses.",
-      price: "$5,000",
-      period: "/ mo",
-      features: [
-        "Advanced Performance Marketing",
-        "Marketing Automation Setup",
-        "Comprehensive SEO Strategy",
-        "Content Marketing & Copywriting",
-        "Social Media Management (3 platforms)",
-      ],
-      popular: true,
-    },
-    {
-      name: "Enterprise",
-      description: "Custom revenue acceleration operations for market leaders.",
-      price: "Custom",
-      period: "",
-      features: [
-        "Dedicated Growth Team",
-        "Omni-channel Campaigns",
-        "Custom Machine Learning Analytics",
-        "Full-funnel Optimization",
-        "24/7 Strategic Consulting",
-      ],
-      popular: false,
-    },
-  ],
-  orm: [
-    {
-      name: "Vigilance",
-      description: "Basic digital monitoring and reputation safeguarding.",
-      price: "$1,800",
-      period: "/ mo",
-      features: [
-        "Brand Search Monitoring",
-        "Basic Sentiment Analysis",
-        "Review Management Setup",
-        "Monthly Health Reports",
-      ],
-      popular: false,
-    },
-    {
-      name: "Shield",
-      description: "Proactive management and suppression of negative narratives.",
-      price: "$3,500",
-      period: "/ mo",
-      features: [
-        "Real-time Sentiment Tracking",
-        "Crisis Response Protocol",
-        "Active Content Suppression",
-        "PR distribution",
-        "Bi-weekly Strategy Meetings",
-      ],
-      popular: true,
-    },
-    {
-      name: "Authority",
-      description: "Complete ecosystem control and positive asset building.",
-      price: "Custom",
-      period: "",
-      features: [
-        "Dedicated Crisis Team",
-        "Legal Takedown Assistance",
-        "Wikipedia Management",
-        "Executive Brand Building",
-        "Custom Defense Infrastructures",
-      ],
-      popular: false,
-    },
-  ],
-  production: [
-    {
-      name: "Essential",
-      description: "Professional core assets for digital campaigns.",
-      price: "$4,000",
-      period: "/ project",
-      features: [
-        "1x High-Impact Video (Up to 60s)",
-        "Basic Pre-production",
-        "Royalty-free Audio",
-        "Standard Color Grading",
-      ],
-      popular: false,
-    },
-    {
-      name: "Cinematic",
-      description: "High-end commercial production with storytelling focus.",
-      price: "$10,000",
-      period: "/ project",
-      features: [
-        "Multiple Ad Films & Cutdowns",
-        "Creative Strategy & Scripting",
-        "Professional Talent Casting",
-        "Advanced Post-Production VFX",
-        "Custom Audio Scoring",
-      ],
-      popular: true,
-    },
-    {
-      name: "Scale",
-      description: "Volume-based visual content operations for continuous growth.",
-      price: "$25,000+",
-      period: "/ mo",
-      features: [
-        "Retained Production Crew",
-        "Ongoing Social Media Assets",
-        "Influencer Content Production",
-        "Continuous A/B Testing Variations",
-        "Brand Identity Development",
-      ],
-      popular: false,
-    },
-  ],
+type RegionCodes = "US" | "IN" | "ARAB";
+
+type TierData = {
+  name: string;
+  description: string;
+  prices: { US: string; IN: string; ARAB: string };
+  period: string;
+  features: string[];
+  popular: boolean;
+};
+
+type PricingTiersType = {
+  marketing: TierData[];
+  orm: TierData[];
+  production: TierData[];
+};
+
+// Default empty scaffold while loading
+const defaultPricingTiers: PricingTiersType = {
+  marketing: [],
+  orm: [],
+  production: [],
 };
 
 const tabs = [
-  { id: "marketing", label: "Marketing", desc: "Revenue Acceleration", icon: TrendingUp },
-  { id: "orm", label: "ORM", desc: "Trust Security", icon: Shield },
-  { id: "production", label: "Production", desc: "Brand Authority", icon: Camera },
+  { id: "marketing", label: "Marketing", desc: "Revenue Acceleration", icon: TrendingUp, headline: "Revenue Acceleration", hook: "Stop guessing. Start growing.", copy: "We combine data intelligence with creative storytelling to turn your brand into a market leader. From ROI-focused performance marketing to organic SEO dominance, we build the engine that drives your revenue forward.", focus: "Efficiency at Scale & Strategic Storytelling." },
+  { id: "orm", label: "ORM", desc: "Trust Security", icon: Shield, headline: "Trust Security", hook: "Your reputation is your strongest currency.", copy: "In a digital-first world, perception is reality. We provide 24/7 digital vigilance, sentiment analysis, and rapid crisis communication to ensure your brand remains bulletproof. We don't just monitor the conversation; we shape it.", focus: "Emergency Response & Brand Integrity." },
+  { id: "production", label: "Production", desc: "Brand Authority", icon: Camera, headline: "Brand Authority", hook: "Visual excellence that demands attention.", copy: "High-impact brands aren’t just seen—they are felt. From cinematic ad films and professional product photography to immersive audio media, we produce high-fidelity content that establishes you as the ultimate authority in your industry.", focus: "Cinematic Excellence & Modern Networking." },
 ];
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<keyof typeof pricingTiers>("marketing");
+  const [pricingTiers, setPricingTiers] = useState<PricingTiersType>(defaultPricingTiers);
+  const [activeTab, setActiveTab] = useState<keyof PricingTiersType>("marketing");
+  const [region, setRegion] = useState<RegionCodes>("US");
+  const [showToggle, setShowToggle] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 1. Fetch live data from Sanity
+  useEffect(() => {
+    async function fetchTiers() {
+      try {
+        const query = `*[_type == "pricingTier"] | order(orderRank asc)`;
+        const data = await client.fetch(query);
+
+        // Map Sanity documents into our grouped UI model
+        const mapping: PricingTiersType = {
+          marketing: [],
+          orm: [],
+          production: [],
+        };
+
+        data.forEach((item: any) => {
+          const cat = item.serviceCategory as keyof PricingTiersType;
+          if (mapping[cat]) {
+            mapping[cat].push({
+              name: item.tierName || "",
+              description: item.description || "",
+              prices: {
+                US: item.priceUSD || "Custom",
+                IN: item.priceINR || "Custom",
+                ARAB: item.priceDinar || "Custom",
+              },
+              period: item.period || "",
+              features: item.features || [],
+              popular: item.isPopular || false,
+            });
+          }
+        });
+
+        setPricingTiers(mapping);
+      } catch (error) {
+        console.error("Error fetching sanity pricing data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchTiers();
+  }, []);
+
+  useEffect(() => {
+    // 1. Check URL override first
+    const params = new URLSearchParams(window.location.search);
+    const regionParam = params.get("region")?.toUpperCase();
+    
+    if (regionParam === "IN" || regionParam === "ARAB" || regionParam === "US") {
+      setRegion(regionParam as RegionCodes);
+      return;
+    }
+
+    // 2. Perform safe auto-detection via TimeZone if no parameter
+    try {
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (timeZone.includes("Calcutta") || timeZone.includes("Kolkata") || timeZone.includes("Asia/Colombo")) {
+        setRegion("IN");
+      } else if (
+        timeZone.includes("Dubai") || 
+        timeZone.includes("Riyadh") || 
+        timeZone.includes("Qatar") ||
+        timeZone.includes("Kuwait")
+      ) {
+        setRegion("ARAB");
+      }
+    } catch (e) {
+      console.log("Timezone parsing skipped.");
+    }
+  }, []);
 
   return (
     <div className="h-screen w-full font-sans bg-[#0a0a0a] overflow-hidden flex flex-col md:justify-center relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#111111]/80 to-transparent pointer-events-none" />
       
-      {/* Top Right Logo */}
-      <div className="absolute top-0 right-0 p-6 z-50">
-        <div className="flex items-center gap-2 text-lg font-bold tracking-tighter">
+      {/* Top Header Region (Logo + Toggles) */}
+      <div className="absolute top-0 right-0 p-4 md:p-6 z-50 flex items-center gap-4 md:gap-6">
+        {/* Region Toggle Dropdown/Pills (Hidden by default, unlocked by double clicking logo) */}
+        {showToggle && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="hidden sm:flex items-center bg-white/5 border border-white/10 rounded-full p-1 backdrop-blur-md"
+          >
+            {(["US", "IN", "ARAB"] as RegionCodes[]).map((r) => (
+              <button
+                key={r}
+                onClick={() => setRegion(r)}
+                className={cn(
+                  "px-3 py-1 text-xs font-semibold rounded-full transition-all duration-300",
+                  region === r 
+                    ? "bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white shadow-lg" 
+                    : "text-gray-400 hover:text-white"
+                )}
+              >
+                {r === "US" ? "USD" : r === "IN" ? "INR" : "DINAR"}
+              </button>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Admanics Logo (Double click to reveal toggle) */}
+        <div 
+          className="flex items-center gap-2 text-lg font-bold tracking-tighter cursor-pointer"
+          onDoubleClick={() => setShowToggle(!showToggle)}
+          title="Double click to reveal region overrides"
+        >
           <div className="w-6 h-6 rounded bg-gradient-to-br from-[#6366f1] to-[#a855f7] flex items-center justify-center shadow-[0_0_15px_-3px_rgba(99,102,241,0.5)]">
             <span className="text-white text-xs">A</span>
           </div>
-          <span className="text-white">ADMANICS</span>
+          <span className="text-white hidden sm:block">ADMANICS</span>
         </div>
       </div>
 
       <main className="w-full h-full max-w-7xl mx-auto px-4 sm:px-8 py-6 md:py-8 lg:py-12 flex flex-col pt-16 md:pt-12 overflow-y-auto md:overflow-visible">
         
-        {/* Header Section Compact */}
-        <div className="mb-6 md:mb-8 text-left md:text-center shrink-0">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2 md:mb-3">
-            Transparent Pricing for <span className="text-gradient">Elite Brands.</span>
+        {/* Dynamic Pillar Header Compact */}
+        <div className="mb-3 md:mb-5 text-left shrink-0 max-w-4xl">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-white mb-2 drop-shadow-none [text-shadow:none]">
+            {tabs.find((t) => t.id === activeTab)?.headline}
           </h1>
-          <p className="text-sm md:text-base text-gray-400 max-w-2xl mx-auto">
-            Choose the operational focus you need. From revenue generation to reputation security.
+          <p className="text-base md:text-lg font-bold text-[#c084fc] mb-3 drop-shadow-none [text-shadow:none]">
+            {tabs.find((t) => t.id === activeTab)?.hook}
+          </p>
+          <p className="text-[13px] md:text-sm text-gray-200 mb-3 leading-relaxed md:leading-relaxed drop-shadow-none [text-shadow:none]">
+            {tabs.find((t) => t.id === activeTab)?.copy}
+          </p>
+          <p className="text-[10px] md:text-xs font-semibold tracking-wider text-gray-400 uppercase drop-shadow-none [text-shadow:none]">
+            Key Focus: <span className="text-[#e879f9] ml-2">{tabs.find((t) => t.id === activeTab)?.focus}</span>
           </p>
         </div>
 
         {/* Tab Selection Navigation Compact */}
-        <div className="flex flex-wrap justify-start md:justify-center gap-2 md:gap-4 mb-6 md:mb-8 shrink-0">
+        <div className="flex flex-wrap justify-start gap-2 md:gap-4 mb-4 md:mb-6 shrink-0 z-10">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -185,10 +186,12 @@ export default function Home() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as keyof typeof pricingTiers)}
                 className={cn(
-                  "relative flex items-center gap-2 md:gap-3 px-3 py-2 md:px-5 md:py-3 rounded-lg md:rounded-xl transition-all duration-300 border text-left",
+                  "relative flex items-center gap-2 md:gap-3 px-3 py-2 md:px-5 md:py-3 rounded-lg md:rounded-xl transition-all duration-300 border text-left group",
                   isActive 
                     ? "bg-[#111111] border-[#6366f1]/50 shadow-[0_0_20px_-5px_rgba(99,102,241,0.3)]" 
-                    : "bg-transparent border-white/5 hover:border-white/10 hover:bg-[#111111]/50 text-gray-400"
+                    : (tab.id === "orm" 
+                        ? "bg-transparent border-white/5 hover:border-[#a855f7]/60 hover:shadow-[0_0_15px_-3px_rgba(168,85,247,0.4)] hover:bg-[#111111]/50 text-gray-400" 
+                        : "bg-transparent border-white/5 hover:border-white/10 hover:bg-[#111111]/50 text-gray-400")
                 )}
               >
                 <div className={cn("p-1.5 md:p-2 rounded md:rounded-lg", isActive ? "bg-[#6366f1]/20 text-[#a855f7]" : "bg-white/5 text-gray-500")}>
@@ -205,21 +208,30 @@ export default function Home() {
 
         {/* Pricing Cards Compact for 1-screen fit */}
         <div className="flex-1 min-h-0 relative">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.25 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 h-full pb-8 md:pb-0"
-            >
-              {pricingTiers[activeTab].map((tier, index) => (
+          {isLoading ? (
+            <div className="h-full w-full flex items-center justify-center">
+               <Loader2 className="w-8 h-8 md:w-10 md:h-10 text-[#6366f1] animate-spin opacity-50" />
+            </div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25 }}
+                className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 h-full pb-8 md:pb-0"
+              >
+                {pricingTiers[activeTab].map((tier, index) => (
                 <div 
                   key={index}
                   className={cn(
-                    "relative flex flex-col p-5 md:p-6 lg:p-7 rounded-xl md:rounded-2xl bg-[#0f0f11] border transition-colors h-full",
-                    tier.popular ? "border-[#6366f1]/40 shadow-[0_0_30px_-10px_rgba(99,102,241,0.15)]" : "border-white/[0.06] hover:border-white/[0.12]"
+                    "relative flex flex-col p-5 md:p-6 lg:p-7 rounded-xl md:rounded-2xl bg-[#0f0f11] border transition-all duration-300 h-full",
+                    tier.popular 
+                      ? "border-[#6366f1]/40 shadow-[0_0_30px_-10px_rgba(99,102,241,0.15)]" 
+                      : (activeTab === "orm" 
+                          ? "border-white/[0.06] hover:border-[#a855f7]/50 hover:shadow-[0_0_20px_-5px_rgba(168,85,247,0.3)]" 
+                          : "border-white/[0.06] hover:border-white/[0.12]")
                   )}
                 >
                   {/* Popular Badge */}
@@ -235,7 +247,7 @@ export default function Home() {
                   <p className="text-xs md:text-sm text-gray-400 mb-4 h-8 md:h-10 leading-tight md:leading-normal shrink-0">{tier.description}</p>
                   
                   <div className="mb-5 md:mb-6 shrink-0">
-                    <span className="text-3xl md:text-4xl font-bold text-white">{tier.price}</span>
+                    <span className="text-3xl md:text-4xl font-bold text-white">{tier.prices[region]}</span>
                     {tier.period && <span className="text-xs md:text-sm text-gray-500 font-medium ml-1">{tier.period}</span>}
                   </div>
 
@@ -259,6 +271,19 @@ export default function Home() {
               ))}
             </motion.div>
           </AnimatePresence>
+          )}
+        </div>
+        {/* Footer CTA */}
+        <div className="mt-3 md:mt-4 shrink-0 text-center border-t border-white/[0.05] pt-4 md:pt-6 pb-2">
+          <h2 className="text-lg md:text-2xl font-bold text-white mb-3">
+            Your Vision, Our Capability.
+          </h2>
+          <GradientButton variant="primary" className="px-8 py-2 md:py-2.5 text-xs md:text-sm mb-2 shadow-[0_0_20px_-5px_var(--color-accent-purple)]">
+            Partner with Admanics
+          </GradientButton>
+          <p className="text-[10px] md:text-xs text-gray-500">
+            Experience the next level of brand empowerment at <span className="text-white">admanics.com</span>
+          </p>
         </div>
       </main>
     </div>

@@ -18,9 +18,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${montserrat.variable} font-sans antialiased`}
+        suppressHydrationWarning
       >
         {children}
       </body>

@@ -7,18 +7,18 @@
   
   /* Admanics Brand Colors */
   --color-obsidian: #050505;
-  --color-obsidian-light: #111827; /* Charcoal */
+  --color-obsidian-light: #1a0b2e; /* Custom deep purple-dark */
   --color-accent-purple: #6366f1;
   --color-accent-blue: #a855f7;
   
   /* Gradients */
-  --background-gradient: linear-gradient(to bottom right, var(--color-background), var(--color-obsidian-light));
+  --background-gradient: linear-gradient(to bottom right, var(--color-obsidian), var(--color-obsidian-light));
   --brand-gradient: linear-gradient(to right, var(--color-accent-purple), var(--color-accent-blue));
 }
 
 @layer base {
   body {
-    background-color: var(--color-background);
+    background-color: var(--color-obsidian);
     background-image: var(--background-gradient);
     color: var(--color-foreground);
     min-height: 100vh;
