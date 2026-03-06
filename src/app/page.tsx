@@ -225,7 +225,7 @@ export default function Home() {
                 {pricingTiers[activeTab].map((tier, index) => (
                   <div
                     key={index}
-                    onClick={() => window.open("https://admanics.com/contact", "_blank")}
+                    onClick={() => window.location.href = "https://admanics.com/contact"}
                     className={cn(
                       "relative flex flex-col p-5 md:p-6 lg:p-7 rounded-xl md:rounded-2xl bg-[#0f0f11] border transition-all duration-300 h-full cursor-pointer hover:-translate-y-2",
                       tier.popular
