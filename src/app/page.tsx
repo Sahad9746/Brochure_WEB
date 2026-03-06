@@ -282,9 +282,9 @@ export default function Home() {
           {/* <GradientButton variant="primary" className="px-8 py-2 md:py-2.5 text-xs md:text-sm mb-2 shadow-[0_0_20px_-5px_var(--color-accent-purple)]">
             Partner with Admanics
           </GradientButton> */}
-          <p className="text-[10px] md:text-xs text-gray-500">
+          {/* <p className="text-[10px] md:text-xs text-gray-500">
             Experience the next level of brand empowerment at <span className="text-white">admanics.com</span>
-          </p>
+          </p> */}
         </div>
       </main>
     </div>
