@@ -62,9 +62,21 @@ export const pricingTierType = defineType({
         }),
     }),
     defineField({
-      name: "priceDinar",
-      title: "Price (Dinar)",
-      description: "e.g., 750 Dinar. Automatically set to 'Custom' if Billing Period is Custom.",
+      name: "priceGCC",
+      title: "Price (GCC / USD)",
+      description: "e.g., $1,000. Automatically set to 'Custom' if Billing Period is Custom.",
+      type: "string",
+      hidden: ({ document }) => document?.period?.toString().toLowerCase() === "custom",
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          if (context.document?.period?.toString().toLowerCase() === "custom") return true;
+          return value ? true : "Required unless Billing Period is Custom";
+        }),
+    }),
+    defineField({
+      name: "priceEUR",
+      title: "Price (Europe / EUR)",
+      description: "e.g., €1,200. Automatically set to 'Custom' if Billing Period is Custom.",
       type: "string",
       hidden: ({ document }) => document?.period?.toString().toLowerCase() === "custom",
       validation: (rule) =>

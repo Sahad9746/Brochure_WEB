@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, CheckCircle2, TrendingUp, Shield, Camera, Globe, Loader2 } from "lucide-react";
+import { CheckCircle2, TrendingUp, Shield, Camera, Loader2 } from "lucide-react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { cn } from "@/components/ui/glass-card";
 import { client } from "@/sanity/lib/client";
 
 // Data Structure for Pricing
-type RegionCodes = "US" | "IN" | "ARAB";
+type RegionCodes = "US" | "IN" | "GCC" | "EU";
 
 type TierData = {
   name: string;
   description: string;
-  prices: { US: string; IN: string; ARAB: string };
+  prices: { US: string; IN: string; GCC: string; EU: string };
   period: string;
   features: string[];
   popular: boolean;
@@ -59,6 +59,7 @@ export default function Home() {
           production: [],
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data.forEach((item: any) => {
           const cat = item.serviceCategory as keyof PricingTiersType;
           if (mapping[cat]) {
@@ -68,7 +69,8 @@ export default function Home() {
               prices: {
                 US: item.priceUSD || "Custom",
                 IN: item.priceINR || "Custom",
-                ARAB: item.priceDinar || "Custom",
+                GCC: item.priceGCC || "Custom",
+                EU: item.priceEUR || "Custom",
               },
               period: item.period || "",
               features: item.features || [],
@@ -92,7 +94,7 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search);
     const regionParam = params.get("region")?.toUpperCase();
     
-    if (regionParam === "IN" || regionParam === "ARAB" || regionParam === "US") {
+    if (regionParam === "IN" || regionParam === "GCC" || regionParam === "EU" || regionParam === "US") {
       setRegion(regionParam as RegionCodes);
       return;
     }
@@ -108,9 +110,19 @@ export default function Home() {
         timeZone.includes("Qatar") ||
         timeZone.includes("Kuwait")
       ) {
-        setRegion("ARAB");
+        setRegion("GCC");
+      } else if (
+        timeZone.includes("Europe/") ||
+        timeZone.includes("London") ||
+        timeZone.includes("Berlin") ||
+        timeZone.includes("Paris") ||
+        timeZone.includes("Rome") ||
+        timeZone.includes("Madrid") ||
+        timeZone.includes("Amsterdam")
+      ) {
+        setRegion("EU");
       }
-    } catch (e) {
+    } catch (e: unknown) {
       console.log("Timezone parsing skipped.");
     }
   }, []);
@@ -127,7 +139,7 @@ export default function Home() {
             animate={{ opacity: 1, scale: 1 }}
             className="hidden sm:flex items-center bg-white/5 border border-white/10 rounded-full p-1 backdrop-blur-md"
           >
-            {(["US", "IN", "ARAB"] as RegionCodes[]).map((r) => (
+            {(["US", "IN", "GCC", "EU"] as RegionCodes[]).map((r) => (
               <button
                 key={r}
                 onClick={() => setRegion(r)}
@@ -138,7 +150,7 @@ export default function Home() {
                     : "text-gray-400 hover:text-white"
                 )}
               >
-                {r === "US" ? "USD" : r === "IN" ? "INR" : "DINAR"}
+                {r === "US" ? "USD" : r === "IN" ? "INR" : r === "GCC" ? "GCC (USD)" : "EUR"}
               </button>
             ))}
           </motion.div>
@@ -256,7 +268,7 @@ export default function Home() {
                   </GradientButton>
 
                   <div className="text-[10px] md:text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 shrink-0">
-                    What's included
+                    What&apos;s included
                   </div>
 
                   <ul className="space-y-2 md:space-y-3 flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
