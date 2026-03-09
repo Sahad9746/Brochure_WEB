@@ -61,17 +61,16 @@ export default function Home() {
               name: "Cinematic",
               description: "High-end commercial production with storytelling focus.",
               prices: {
-                US: "$300",
+                US: "$2499",
                 IN: "₹25K",
-                GCC: "$300",
-                EU: "€300",
+                GCC: "$2999",
+                EU: "€2999",
               },
               period: "",
               features: [
                 "Multiple Ad Films & Cutdowns",
                 "Creative Strategy & Scripting",
                 "Professional Talent Casting",
-                "Advanced Post-Production VFX",
                 "Custom Audio Scoring",
               ],
               popular: true,
@@ -257,9 +256,7 @@ export default function Home() {
                   activeTab === "production" ? "grid-cols-1 max-w-[400px] mx-auto w-full" : "grid-cols-1 md:grid-cols-3"
                 )}
               >
-                {pricingTiers[activeTab]
-                  .slice(0, activeTab === "production" ? 1 : undefined)
-                  .map((tier, index) => (
+                {pricingTiers[activeTab].map((tier, index) => (
                   <div
                     key={index}
                     onClick={() => window.location.href = "https://admanics.com/contact"}
