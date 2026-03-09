@@ -285,8 +285,13 @@ export default function Home() {
                       {activeTab === "production" && (
                         <div className="text-sm text-[#a855f7] font-semibold mb-1 uppercase tracking-wider">Starting from</div>
                       )}
-                      <span className="text-3xl md:text-4xl font-bold text-white">{tier.prices[region]}</span>
-                      {tier.period && <span className="text-xs md:text-sm text-gray-500 font-medium ml-1">{tier.period}</span>}
+                      <div className="flex items-baseline flex-wrap gap-x-2">
+                        <span className="text-3xl md:text-4xl font-bold text-white">{tier.prices[region]}</span>
+                        {tier.period && <span className="text-xs md:text-sm text-gray-500 font-medium">{tier.period}</span>}
+                      </div>
+                      {region === "IN" && tier.prices[region] !== "Custom" && (
+                        <div className="text-[11px] md:text-xs text-gray-500 font-medium mt-1">+ 18% GST applicable</div>
+                      )}
                     </div>
 
                     <GradientButton variant={tier.popular ? "primary" : "outline"} className="w-full mb-5 md:mb-6 py-2 md:py-2.5 text-xs md:text-sm shrink-0 cursor-pointer">
