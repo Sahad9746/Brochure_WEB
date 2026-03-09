@@ -56,13 +56,33 @@ export default function Home() {
         const mapping: PricingTiersType = {
           marketing: [],
           orm: [],
-          production: [],
+          production: [
+            {
+              name: "Cinematic",
+              description: "High-end commercial production with storytelling focus.",
+              prices: {
+                US: "$300",
+                IN: "₹25K",
+                GCC: "$300",
+                EU: "€300",
+              },
+              period: "",
+              features: [
+                "Multiple Ad Films & Cutdowns",
+                "Creative Strategy & Scripting",
+                "Professional Talent Casting",
+                "Advanced Post-Production VFX",
+                "Custom Audio Scoring",
+              ],
+              popular: true,
+            },
+          ],
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data.forEach((item: any) => {
           const cat = item.serviceCategory as keyof PricingTiersType;
-          if (mapping[cat]) {
+          if (mapping[cat] && cat !== "production") {
             mapping[cat].push({
               name: item.tierName || "",
               description: item.description || "",
@@ -232,7 +252,10 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.25 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 h-full pb-8 md:pb-0"
+                className={cn(
+                  "grid gap-4 md:gap-6 h-full pb-8 md:pb-0",
+                  activeTab === "production" ? "grid-cols-1 max-w-[400px] mx-auto w-full" : "grid-cols-1 md:grid-cols-3"
+                )}
               >
                 {pricingTiers[activeTab].map((tier, index) => (
                   <div
@@ -260,6 +283,9 @@ export default function Home() {
                     <p className="text-xs md:text-sm text-gray-400 mb-4 h-8 md:h-10 leading-tight md:leading-normal shrink-0">{tier.description}</p>
 
                     <div className="mb-5 md:mb-6 shrink-0">
+                      {activeTab === "production" && (
+                        <div className="text-sm text-[#a855f7] font-semibold mb-1 uppercase tracking-wider">Starting from</div>
+                      )}
                       <span className="text-3xl md:text-4xl font-bold text-white">{tier.prices[region]}</span>
                       {tier.period && <span className="text-xs md:text-sm text-gray-500 font-medium ml-1">{tier.period}</span>}
                     </div>
@@ -269,7 +295,7 @@ export default function Home() {
                     </GradientButton>
 
                     <div className="text-[10px] md:text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 shrink-0">
-                      What's included
+                      What&apos;s included
                     </div>
 
                     <ul className="space-y-2 md:space-y-3 flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
