@@ -181,9 +181,7 @@ export default function Home() {
           onDoubleClick={() => setShowToggle(!showToggle)}
           title="Double click to reveal region overrides"
         >
-          <div className="w-6 h-6 rounded bg-gradient-to-br from-[#6366f1] to-[#a855f7] flex items-center justify-center shadow-[0_0_15px_-3px_rgba(99,102,241,0.5)]">
-            <span className="text-white text-xs">A</span>
-          </div>
+          <img src="/logo.png" alt="Admanics Logo" className="w-6 h-6 rounded shadow-[0_0_15px_-3px_rgba(99,102,241,0.5)]" />
           <span className="text-white hidden sm:block">ADMANICS</span>
         </div>
       </div>
