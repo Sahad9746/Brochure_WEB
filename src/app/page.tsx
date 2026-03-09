@@ -257,7 +257,9 @@ export default function Home() {
                   activeTab === "production" ? "grid-cols-1 max-w-[400px] mx-auto w-full" : "grid-cols-1 md:grid-cols-3"
                 )}
               >
-                {pricingTiers[activeTab].map((tier, index) => (
+                {pricingTiers[activeTab]
+                  .slice(0, activeTab === "production" ? 1 : undefined)
+                  .map((tier, index) => (
                   <div
                     key={index}
                     onClick={() => window.location.href = "https://admanics.com/contact"}
